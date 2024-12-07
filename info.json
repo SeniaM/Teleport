@@ -1,0 +1,8 @@
+{
+     "name": "test-mod",
+     "version": "0.0.1",
+     "title": "My first mod",
+     "author": "Petia",
+     "factorio_version": "2.0",
+     "dependencies": ["? optional-mod"]
+   }
