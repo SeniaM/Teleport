@@ -1,10 +1,5 @@
 require "gui"
-
-function tp(player, selected)
-   local newpos = {x=selected.position.x, y=selected.position.y}
-   player.teleport(newpos, selected.surface_index)
-   player.surface.create_entity{name="my-fire", position=player.position, force="player"}
-end
+require "helpFuncs"
   
 script.on_event("my-custom-input", function(event)
     local player = game.get_player(event.player_index)
@@ -13,9 +8,16 @@ script.on_event("my-custom-input", function(event)
     if player.valid and player ~= nil then
       selected = player.selected
     end
-    if selected ~= nil then 
-      tp(player, selected)
+    if selected ~= nil then
+      local newpos = {x=selected.position.x, y=selected.position.y}
+      tp(player, newpos, selected.surface_index)
     else
       mainMenu(event)
+      for i, v in pairs(game.players) do
+        if v.character then
+          game.print(v.name)
+        end
+      end
+      
     end
 end)

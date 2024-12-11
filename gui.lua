@@ -12,13 +12,16 @@ function mainMenu (event)
   
   local player = game.get_player(event.player_index)
 	local screen_element = player.gui.screen
+  if player.gui.screen.ugg_main_frame then
+    player.gui.screen.ugg_main_frame.destroy()
+  end
 	local main_frame = screen_element.add{type="frame", name="ugg_main_frame", caption={"test-mod.tp_menu"}}
-	main_frame.style.size = {500, 650}
+	main_frame.style.width = 500
 	main_frame.auto_center = true
 
   
 	local content_frame = main_frame.add{type="frame", name="content_frame", direction="vertical", style="bordered_frame"}
-  content_frame.style.height = 560
+  --content_frame.style.height = 560
 	local controls_flow = content_frame.add{type="flow", name="controls_flow", direction="vertical"}
   controls_flow.style.vertical_spacing = 10
   local my_table = controls_flow.add{type="table", name = "my_table", column_count= 3}
@@ -37,7 +40,9 @@ function mainMenu (event)
   local button = my_table.add{type="button", name="ugg_controls_toggle", caption={"test-mod.Add"}, style = "confirm_button"}
   button.style.width = 80
   local listbox = controls_flow.add{type = "list-box", name = "ugg_controls_listbox"}
-  listbox.style.height = 400
+  listbox.style.height = 300
+  local listbox2 = controls_flow.add{type= "list-box", name="ugg_controls_listbox2", visible = false}
+  listbox2.style.minimal_height = 100
   local exitBtn = controls_flow.add{type= "button", name="ugg_controls_toggle2", caption={"test-mod.tp_exit"}, style = "red_back_button"}
   exitBtn.style.width = 100
   exitBtn.style.horizontal_align = "left"
@@ -46,6 +51,13 @@ function mainMenu (event)
     if global.players[event.player_index] ~= nil then 
       for i in pairs(global.players[event.player_index]) do
           listbox.add_item(i)
+      end
+    end
+    
+    for i, p in pairs(game.players) do
+      if p.character and p.name ~= game.get_player(event.player_index).name then
+        listbox2.visible = true
+        listbox2.add_item(p.name)
       end
     end
   
@@ -68,6 +80,8 @@ script.on_event(defines.events.on_gui_click, function(event)
         if rawget(global.players[event.player_index], text.text) == nil then
           list.add_item(text.text)
           global.players[event.player_index][text.text] = {x = player.position.x, y = player.position.y, surface = player.surface_index}
+          local serialized_data = serpent.block(global.players)
+          settings.global["coords-settings"] = {value = serialized_data}
         end
     elseif event.element.name == "del_button" then
       local list = player.gui.screen.ugg_main_frame.content_frame.controls_flow.ugg_controls_listbox
@@ -77,6 +91,8 @@ script.on_event(defines.events.on_gui_click, function(event)
         if text.text == val then
           global.players[event.player_index][text.text] = nil
           list.remove_item(key)
+          local serialized_data = serpent.block(global.players)
+          settings.global["coords-settings"] = {value = serialized_data}
         end
       end
     --  if text.text == list.items[list.selected_index] then
@@ -89,8 +105,8 @@ end)
 script.on_event(defines.events.on_gui_selection_state_changed, function(event)
     local player = game.get_player(event.player_index)
     local text = player.gui.screen.ugg_main_frame.content_frame.controls_flow.my_table.ugg_controls_textfield
-    local serialized_data = serpent.block(global.players)
-    settings.global["coords-settings"] = {value = serialized_data}
+    --local serialized_data = serpent.block(global.players)
+    --settings.global["coords-settings"] = {value = serialized_data}
     game.print(serialized_data)
     if event.element.name == "ugg_controls_listbox" then
       local list = event.element
@@ -102,6 +118,17 @@ script.on_event(defines.events.on_gui_selection_state_changed, function(event)
       local surface = coords.surface;
       game.print(tags)
       game.get_player(event.player_index).teleport({x, y}, surface)
+      
+    elseif event.element.name == "ugg_controls_listbox2" then
+      local list = event.element
+      local nameOfPlayer = list.items[list.selected_index]
+      
+      for i, p in pairs(game.players) do
+        if p.character and p.name == nameOfPlayer then
+          tp(player, p.position, p.surface)
+        end
+      end
+        
     end
 end)
 
